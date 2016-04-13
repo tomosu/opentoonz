@@ -172,7 +172,6 @@ void QtOfflineGL::createContext(TDimension rasterSize, const TOfflineGL::Imp *sh
 	m_context->makeCurrent(m_surface);
 
 	QOpenGLFramebufferObjectFormat fbo_format;
-        fbo_format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 	m_fbo = new QOpenGLFramebufferObject(rasterSize.lx, rasterSize.ly, fbo_format);
 	m_fbo->bind();
 
@@ -228,7 +227,6 @@ void QtOfflineGL::getRaster(TRaster32P raster)
 	int ly = raster->getLy();
 
 	raster->lock();
-
 	raster->copy( TRaster32P(lx, ly, lx, (TPixelRGBM32 *)m_fbo->toImage().mirrored().bits(), false) );
 
 #ifdef WIN32
