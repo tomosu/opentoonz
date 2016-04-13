@@ -228,11 +228,8 @@ void QtOfflineGL::getRaster(TRaster32P raster)
 	int ly = raster->getLy();
 
 	raster->lock();
-	//glReadPixels(0, 0, lx, ly,
-	//	     GL_RGBA /*GL_BGRA_EXT*/, GL_UNSIGNED_BYTE,
-	//	     raster->getRawData());
 
-	raster->copy( TRaster32P(lx, ly, lx, (TPixelRGBM32 *)m_fbo->toImage().bits(), false) );
+	raster->copy( TRaster32P(lx, ly, lx, (TPixelRGBM32 *)m_fbo->toImage().mirrored().bits(), false) );
 
 #ifdef WIN32
 	swapRedBlueChannels(raster->getRawData(), lx * ly);
