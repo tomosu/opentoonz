@@ -71,6 +71,8 @@
 
 // Qt includes
 #include <QApplication>
+#include <QAbstractEventDispatcher>
+#include <QAbstractNativeEventFilter>
 #include <QSplashScreen>
 #include <QGLPixelBuffer>
 #include <QTranslator>
@@ -262,6 +264,41 @@ int main(int argc, char *argv[]) {
   }
 
   QApplication a(argc, argv);
+
+#ifdef MACOSX
+  // This workaround is to avoid missing left button problem on Qt5.6.0.
+  // To invalidate m_rightButtonClicked in Qt/qnsview.mm, sending NSLeftButtonDown event
+  // before NSLeftMouseDragged event propagated to QApplication.
+  // See more details in ../mousedragfilter/mousedragfilter.mm.
+
+#include "mousedragfilter.h"
+
+  class OSXMouseDragFilter : public QAbstractNativeEventFilter
+  {
+    bool leftButtonPressed =false;
+
+  public:
+    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, long *) Q_DECL_OVERRIDE
+    {
+      if( IsLeftMouseDown(message) ){ leftButtonPressed =true; }
+      if( IsLeftMouseUp(message) ){ leftButtonPressed =false; }
+
+      if (eventType == "mac_generic_NSEvent") {
+	if(IsLeftMouseDragged(message) && !leftButtonPressed){
+	  std::cout << "force mouse press event" << std::endl;
+	  SendLeftMousePressEvent();
+	  return true;
+	}
+      }
+      return false;
+    }
+  };
+
+  std::unique_ptr<QAbstractNativeEventFilter> mouseDragFilter(new OSXMouseDragFilter);
+  a.installNativeEventFilter(mouseDragFilter.get());
+#endif
+
+
 
 #ifdef Q_OS_WIN
   //	Since currently OpenToonz does not work with OpenGL of software or
@@ -483,7 +520,7 @@ int main(int argc, char *argv[]) {
   TApp::instance()->init();
 
 // iwsw commented out temporarily
-#if 0 
+#if 0
   QStringList monitorNames;
   /*-- 接続モニタがPVM-2541の場合のみLUTを読み込む --*/
   if (Preferences::instance()->isDoColorCorrectionByUsing3DLutEnabled())
