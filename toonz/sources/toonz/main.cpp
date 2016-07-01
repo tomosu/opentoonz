@@ -294,8 +294,7 @@ int main(int argc, char *argv[]) {
     }
   };
 
-  std::unique_ptr<QAbstractNativeEventFilter> mouseDragFilter(new OSXMouseDragFilter);
-  a.installNativeEventFilter(mouseDragFilter.get());
+  a.installNativeEventFilter(new OSXMouseDragFilter);
 #endif
 
 
