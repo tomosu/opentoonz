@@ -266,29 +266,33 @@ int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
 
 #ifdef MACOSX
-  // This workaround is to avoid missing left button problem on Qt5.6.0.
-  // To invalidate m_rightButtonClicked in Qt/qnsview.mm, sending NSLeftButtonDown event
-  // before NSLeftMouseDragged event propagated to QApplication.
-  // See more details in ../mousedragfilter/mousedragfilter.mm.
+// This workaround is to avoid missing left button problem on Qt5.6.0.
+// To invalidate m_rightButtonClicked in Qt/qnsview.mm, sending NSLeftButtonDown
+// event
+// before NSLeftMouseDragged event propagated to QApplication.
+// See more details in ../mousedragfilter/mousedragfilter.mm.
 
 #include "mousedragfilter.h"
 
-  class OSXMouseDragFilter : public QAbstractNativeEventFilter
-  {
-    bool leftButtonPressed =false;
+  class OSXMouseDragFilter final : public QAbstractNativeEventFilter {
+    bool leftButtonPressed = false;
 
   public:
-    virtual bool nativeEventFilter(const QByteArray &eventType, void *message, long *) Q_DECL_OVERRIDE
-    {
-      if( IsLeftMouseDown(message) ){ leftButtonPressed =true; }
-      if( IsLeftMouseUp(message) ){ leftButtonPressed =false; }
+    bool nativeEventFilter(const QByteArray &eventType, void *message,
+                           long *) Q_DECL_OVERRIDE {
+      if (IsLeftMouseDown(message)) {
+        leftButtonPressed = true;
+      }
+      if (IsLeftMouseUp(message)) {
+        leftButtonPressed = false;
+      }
 
       if (eventType == "mac_generic_NSEvent") {
-	if(IsLeftMouseDragged(message) && !leftButtonPressed){
-	  std::cout << "force mouse press event" << std::endl;
-	  SendLeftMousePressEvent();
-	  return true;
-	}
+        if (IsLeftMouseDragged(message) && !leftButtonPressed) {
+          std::cout << "force mouse press event" << std::endl;
+          SendLeftMousePressEvent();
+          return true;
+        }
       }
       return false;
     }
@@ -296,8 +300,6 @@ int main(int argc, char *argv[]) {
 
   a.installNativeEventFilter(new OSXMouseDragFilter);
 #endif
-
-
 
 #ifdef Q_OS_WIN
   //	Since currently OpenToonz does not work with OpenGL of software or
