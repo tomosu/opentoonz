@@ -356,6 +356,7 @@ include_directories(
     ../../sources/toonzfarm/include
     ../../sources/toonzqt
 )
+
 if(APPLE)
     include_directories(../../sources/mousedragfilter)
 endif()
@@ -383,6 +384,7 @@ elseif(APPLE)
 
     # 変なところにライブラリ生成するカスども
     set(EXTRA_LIBS ${EXTRA_LIBS} "$<TARGET_FILE:tnzstdfx>" "$<TARGET_FILE:tfarm>")
+
 
     target_link_libraries(OpenToonz_${VERSION} Qt5::Core Qt5::Gui Qt5::Network Qt5::OpenGL Qt5::Svg Qt5::Xml Qt5::Script Qt5::Widgets Qt5::PrintSupport Qt5::Multimedia ${GL_LIB} ${GLUT_LIB} ${COCOA_LIB} ${EXTRA_LIBS} mousedragfilter)
 
