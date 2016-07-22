@@ -71,7 +71,9 @@ private:
 //--------------------------------------------------------
 
 ShadingContext::Imp::Imp()
-    : m_pixelBuffer(new QGLPixelBuffer(1, 1, format())) {}
+    : m_pixelBuffer(new QGLPixelBuffer(1, 1, format())) {
+  m_pixelBuffer->context()->contextHandle()->moveToThread(nullptr);
+}
 
 //--------------------------------------------------------
 
@@ -114,7 +116,6 @@ ShadingContext::~ShadingContext() {
   // Destructor of QGLPixelBuffer calls QOpenGLContext::makeCurrent() internally,
   // so the current thread must be the owner of QGLPixelBuffer context,
   // when the destructor of m_imp->m_context is called.
-
   m_imp->m_pixelBuffer->context()->contextHandle()->moveToThread(QThread::currentThread());
 }
 
@@ -169,8 +170,8 @@ void ShadingContext::makeCurrent() {
 //--------------------------------------------------------
 
 void ShadingContext::doneCurrent() {
-  m_imp->m_pixelBuffer->context()->contextHandle()->moveToThread(0);
   m_imp->m_pixelBuffer->doneCurrent();
+  m_imp->m_pixelBuffer->context()->contextHandle()->moveToThread(nullptr);
 }
 
 //--------------------------------------------------------
